@@ -114,10 +114,10 @@ void execArgsPiped(char** parsed, char** parsedpipe)
 void openHelp()
 {
     puts("\nList of Commands supported:"
-        "\n>exit"
-        "\n>rm"
-        "\n>cat"
-        "\n>clear");
+        "\n$exit"
+        "\n$rm"
+        "\n$cat"
+        "\n$clear");
     return;
 }
   
@@ -133,6 +133,7 @@ int ownCmdHandler(char** parsed)
     ListOfOwnCmds[2] = "rm";
     ListOfOwnCmds[3] = "cat";
     ListOfOwnCmds[4] = "clear";
+    ListOfOwnCmds[5] = "cowsay";
     
     for (i = 0; i < NoOfOwnCmds; i++) {
         if (strcmp(parsed[0], ListOfOwnCmds[i]) == 0) {
@@ -196,12 +197,56 @@ int ownCmdHandler(char** parsed)
                 fp = fopen (filename, "w");
             }
         }
-    case 5: ;
+        return 1;
+    case 5:
         clear();
+        return 1;
+    case 6: 
+        printf(" ");
+        for (int i = 1; i < MAXLIST; i++) 
+        {
+            if (parsed[i] == NULL)
+                break;
+            if (strlen(parsed[i]) == 0)
+                break;
+            for(int j=0; j < strlen(parsed[i])+1; j++)
+            {
+                printf("-");
+            }
+        }
+        printf("\n(");
+        for (int i = 1; i < MAXLIST; i++) 
+        {
+            if (parsed[i] == NULL)
+                break;
+            if (strlen(parsed[i]) == 0)
+                break;
+            printf("%s ",parsed[i]);
+        }
+        printf(")\n");
+        printf(" ");
+        for (int i = 1; i < MAXLIST; i++) 
+        {
+            if (parsed[i] == NULL)
+                break;
+            if (strlen(parsed[i]) == 0)
+                break;
+            for(int j=0; j < strlen(parsed[i])+1; j++)
+            {
+                printf("-");
+            }
+        }
+        printf("\n");
+        printf("     \\  ^__^\n");
+        printf("      \\ (oo)\\_____\n");
+        printf("        (__)\\     )\\/\\\n");
+        printf("           ||----w |\n");
+        printf("           ||     ||\n");
+        return 1;
     default:
         break;
     }
-  
+
     return 0;
 }
   
