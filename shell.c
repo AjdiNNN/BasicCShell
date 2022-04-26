@@ -45,88 +45,22 @@ int takeInput(char* str)
     }
 }
 
-  
-// Function where the system command is executed
-void execArgs(char** parsed)
-{
-    // Forking a child
-    pid_t pid = fork(); 
-  
-    if (pid == -1) {
-        printf("\nFailed forking child..");
-        return;
-    } else if (pid == 0) {
-        exit(0);
-    } else {
-        // waiting for child to terminate
-        wait(NULL); 
-        return;
-    }
-}
-  
-// Function where the piped system commands is executed
-void execArgsPiped(char** parsed, char** parsedpipe)
-{
-    // 0 is read end, 1 is write end
-    int pipefd[2]; 
-    pid_t p1, p2;
-  
-    if (pipe(pipefd) < 0) {
-        printf("\nPipe could not be initialized");
-        return;
-    }
-    p1 = fork();
-    if (p1 < 0) {
-        printf("\nCould not fork");
-        return;
-    }
-  
-    if (p1 == 0) {
-        // Child 1 executing..
-        // It only needs to write at the write end
-        close(pipefd[0]);
-        dup2(pipefd[1], STDOUT_FILENO);
-        close(pipefd[1]);
-    } else {
-        // Parent executing
-        p2 = fork();
-  
-        if (p2 < 0) {
-            printf("\nCould not fork");
-            return;
-        }
-  
-        // Child 2 executing..
-        // It only needs to read at the read end
-        if (p2 == 0) {
-            close(pipefd[1]);
-            dup2(pipefd[0], STDIN_FILENO);
-            close(pipefd[0]);
-        } else {
-            // parent executing, waiting for two children
-            wait(NULL);
-            wait(NULL);
-        }
-    }
-}
-  
 // Help command builtin
 void openHelp()
 {
-    puts("\nList of Commands supported:"
+    puts("List of Commands built-in supported:"
         "\n$exit"
         "\n$rm"
         "\n$cat"
-        "\n$clear");
+        "\n$clear"
+        );
     return;
 }
-  
-// Function to execute builtin commands
+  // Function to execute builtin commands
 int ownCmdHandler(char** parsed)
 {
     int NoOfOwnCmds = 6, i, switchOwnArg = 0;
     char* ListOfOwnCmds[NoOfOwnCmds];
-    char* username;
 
     ListOfOwnCmds[0] = "exit";
     ListOfOwnCmds[1] = "help";
@@ -141,12 +75,11 @@ int ownCmdHandler(char** parsed)
             break;
         }
     }
-    if(switchOwnArg == 0)
-        printf("Command not found use help\n");
     switch (switchOwnArg) {
     case 1:
         printf("\nGoodbye\n");
         exit(0);
+        return 1;
     case 2:
         openHelp();
         return 1;
@@ -176,7 +109,7 @@ int ownCmdHandler(char** parsed)
                 if (fp == NULL)
                 {
                     printf("Cannot open file \n");
-                    exit(0);
+                    return 1;
                 }
             
                 // Read contents from file
@@ -250,6 +183,85 @@ int ownCmdHandler(char** parsed)
     return 0;
 }
   
+// Function where the system command is executed
+void execArgs(char** parsed)
+{
+    if(ownCmdHandler(parsed))
+        return;
+    // Forking a child
+    pid_t pid = fork(); 
+  
+    if (pid == -1) {
+        printf("\nFailed forking child..");
+        return;
+    } else if (pid == 0) {
+        if (execv(parsed[0], parsed) < 0) {
+            printf("\nCould not execute command..");
+        }
+        exit(0);
+    } else {
+        // waiting for child to terminate
+        wait(NULL); 
+        return;
+    }
+}
+  
+  
+// Function where the piped system commands is executed
+void execArgsPiped(char** parsed, char** parsedpipe)
+{
+    // 0 is read end, 1 is write end
+    int pipefd[2];
+    pid_t p1, p2;
+  
+    if (pipe(pipefd) < 0) {
+        printf("\nPipe could not be initialized");
+        return;
+    }
+    p1 = fork();
+    if (p1 < 0) {
+        printf("\nCould not fork");
+        return;
+    }
+  
+    if (p1 == 0) {
+        // Child 1 executing..
+        // It only needs to write at the write end
+        close(pipefd[0]);
+        dup2(pipefd[1], STDOUT_FILENO);
+        close(pipefd[1]);
+        if (execv(parsed[0], parsed) < 0) {
+            printf("\nCould not execute command 1..");
+            exit(0);
+        }
+    } else {
+        // Parent executing
+        p2 = fork();
+  
+        if (p2 < 0) {
+            printf("\nCould not fork");
+            return;
+        }
+  
+        // Child 2 executing..
+        // It only needs to read at the read end
+        if (p2 == 0) {
+            close(pipefd[1]);
+            dup2(pipefd[0], STDIN_FILENO);
+            close(pipefd[0]);
+            if (execv(parsedpipe[0], parsedpipe) < 0) {
+                printf("\nCould not execute command 2..");
+                exit(0);
+            }
+        } else {
+            // parent executing, waiting for two children
+            wait(NULL);
+            wait(NULL);
+        }
+    }
+}
+  
+
 // function for finding pipe
 int parsePipe(char* str, char** strpiped)
 {
@@ -289,20 +301,13 @@ int processString(char* str, char** parsed, char** parsedpipe)
     int piped = 0;
   
     piped = parsePipe(str, strpiped);
-  
     if (piped) {
         parseSpace(strpiped[0], parsed);
         parseSpace(strpiped[1], parsedpipe);
-  
     } else {
-  
         parseSpace(str, parsed);
     }
-  
-    if (ownCmdHandler(parsed))
-        return 0;
-    else
-        return 1 + piped;
+    return 1 + piped;
 }
   
 int main()
@@ -326,11 +331,9 @@ int main()
         // process
         execFlag = processString(inputString,
         parsedArgs, parsedArgsPiped);
-        // execflag returns zero if there is no command
-        // or it is a builtin command,
+        // execflag returns zero if there is no command,
         // 1 if it is a simple command
         // 2 if it is including a pipe.
-  
         // execute
         if (execFlag == 1)
             execArgs(parsedArgs);
