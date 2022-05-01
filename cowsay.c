@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <string.h> 
 
+/*
+* Basic cowsay outputs cowsay with text bubble above
+*/
+
 int main(int argc, char *argv[]) {
     printf(" ");
     for (int i = 1; i < argc; i++) 

@@ -34,11 +34,11 @@ void execArgs(char** parsed)
     pid_t pid = fork(); 
   
     if (pid == -1) {
-        printf("\nFailed forking child..");
+        printf("\nFailed forking child..\n");
         return;
     } else if (pid == 0) {
         if (execv(parsed[0], parsed) < 0) {
-            printf("\nCould not execute command..");
+            printf("Could not execute command..\n");
         }
         exit(0);
     } else {
@@ -57,12 +57,12 @@ void execArgsPiped(char** parsed, char** parsedpipe)
     pid_t p1, p2;
   
     if (pipe(pipefd) < 0) {
-        printf("\nPipe could not be initialized");
+        printf("Pipe could not be initialized\n");
         return;
     }
     p1 = fork();
     if (p1 < 0) {
-        printf("\nCould not fork");
+        printf("\nCould not fork\n");
         return;
     }
   
@@ -73,7 +73,7 @@ void execArgsPiped(char** parsed, char** parsedpipe)
         dup2(pipefd[1], STDOUT_FILENO);
         close(pipefd[1]);
         if (execv(parsed[0], parsed) < 0) {
-            printf("\nCould not execute command 1..");
+            printf("Could not execute command 1..\n");
             exit(0);
         }
     } else {
@@ -81,7 +81,7 @@ void execArgsPiped(char** parsed, char** parsedpipe)
         p2 = fork();
   
         if (p2 < 0) {
-            printf("\nCould not fork");
+            printf("Could not fork\n");
             return;
         }
   
@@ -92,7 +92,7 @@ void execArgsPiped(char** parsed, char** parsedpipe)
             dup2(pipefd[0], STDIN_FILENO);
             close(pipefd[0]);
             if (execv(parsedpipe[0], parsedpipe) < 0) {
-                printf("\nCould not execute command 2..");
+                printf("Could not execute command 2..\n");
                 exit(0);
             }
         } else {
@@ -172,7 +172,6 @@ int main()
         // process
         execFlag = processString(inputString,
         parsedArgs, parsedArgsPiped);
-        // execflag returns zero if there is no command,
         // 1 if it is a simple command
         // 2 if it is including a pipe.
         // execute

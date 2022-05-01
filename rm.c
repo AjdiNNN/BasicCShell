@@ -3,6 +3,10 @@
 #include <stdlib.h>
 #include <errno.h>
 
+/*
+* Remove command, basic functionality of just removing file
+*/
+
 int main(int argc, char *argv[]) {
     for(int i=1 ; i<argc ; i++)
     {

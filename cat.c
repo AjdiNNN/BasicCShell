@@ -2,7 +2,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
- 
+/*
+* Cat command with support to create files with ex. cat >newfilename
+*/
 int main(int argc, char *argv[]) {
   FILE *file;
   int chr;
