@@ -11,8 +11,10 @@
 
 #define MAXCOM 1000 // max number of letters to be supported
 #define MAXLIST 100 // max number of commands to be supported
+#define red() printf("\033[0;31m")
+#define resetColor() printf("\033[0m")
+#define purple() printf("\033[0;35m")
 
-  
 // Function to take input
 int takeInput(char* str)
 {
@@ -34,11 +36,15 @@ void execArgs(char** parsed)
     pid_t pid = fork(); 
   
     if (pid == -1) {
+        red();
         printf("\nFailed forking child..\n");
+        resetColor();
         return;
     } else if (pid == 0) {
         if (execv(parsed[0], parsed) < 0) {
+            red();
             printf("Could not execute command..\n");
+            resetColor();
         }
         exit(0);
     } else {
@@ -57,12 +63,16 @@ void execArgsPiped(char** parsed, char** parsedpipe)
     pid_t p1, p2;
   
     if (pipe(pipefd) < 0) {
+        red();
         printf("Pipe could not be initialized\n");
+        resetColor();
         return;
     }
     p1 = fork();
     if (p1 < 0) {
+        red();
         printf("\nCould not fork\n");
+        resetColor();
         return;
     }
   
@@ -73,7 +83,9 @@ void execArgsPiped(char** parsed, char** parsedpipe)
         dup2(pipefd[1], STDOUT_FILENO);
         close(pipefd[1]);
         if (execv(parsed[0], parsed) < 0) {
+            red();
             printf("Could not execute command 1..\n");
+            resetColor();
             exit(0);
         }
     } else {
@@ -81,7 +93,9 @@ void execArgsPiped(char** parsed, char** parsedpipe)
         p2 = fork();
   
         if (p2 < 0) {
+            red();
             printf("Could not fork\n");
+            resetColor();
             return;
         }
   
@@ -92,7 +106,9 @@ void execArgsPiped(char** parsed, char** parsedpipe)
             dup2(pipefd[0], STDIN_FILENO);
             close(pipefd[0]);
             if (execv(parsedpipe[0], parsedpipe) < 0) {
+                red();
                 printf("Could not execute command 2..\n");
+                resetColor();
                 exit(0);
             }
         } else {
@@ -165,7 +181,9 @@ int main()
     host_entry = gethostbyname(hostbuffer);
     char* username = getenv("USER");
     while (1) {
+        purple();
         printf("%s@%s:~$", hostbuffer, username);
+        resetColor();
         // take input
         if (takeInput(inputString))
             continue;
