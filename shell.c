@@ -54,25 +54,23 @@ void execArgs(char** parsed)
     }
 }
   
-  
-// Function where the piped system commands is executed
+  // Function where the piped system commands is executed
 void execArgsPiped(char** parsed, char** parsedpipe)
 {
     // 0 is read end, 1 is write end
-    int pipefd[2];
+    int pipefd[2]; 
     pid_t p1, p2;
   
     if (pipe(pipefd) < 0) {
         red();
-        printf("Pipe could not be initialized\n");
+        printf("\nPipe could not be initialized");
         resetColor();
         return;
     }
     p1 = fork();
     if (p1 < 0) {
         red();
-        printf("\nCould not fork\n");
-        resetColor();
+        printf("\nCould not fork");
         return;
     }
   
@@ -82,9 +80,10 @@ void execArgsPiped(char** parsed, char** parsedpipe)
         close(pipefd[0]);
         dup2(pipefd[1], STDOUT_FILENO);
         close(pipefd[1]);
-        if (execv(parsed[0], parsed) < 0) {
+  
+        if (execvp(parsed[0], parsed) < 0) {
             red();
-            printf("Could not execute command 1..\n");
+            printf("\nCould not execute command 1..");
             resetColor();
             exit(0);
         }
@@ -94,7 +93,7 @@ void execArgsPiped(char** parsed, char** parsedpipe)
   
         if (p2 < 0) {
             red();
-            printf("Could not fork\n");
+            printf("\nCould not fork");
             resetColor();
             return;
         }
@@ -105,9 +104,9 @@ void execArgsPiped(char** parsed, char** parsedpipe)
             close(pipefd[1]);
             dup2(pipefd[0], STDIN_FILENO);
             close(pipefd[0]);
-            if (execv(parsedpipe[0], parsedpipe) < 0) {
+            if (execvp(parsedpipe[0], parsedpipe) < 0) {
                 red();
-                printf("Could not execute command 2..\n");
+                printf("\nCould not execute command 2..");
                 resetColor();
                 exit(0);
             }

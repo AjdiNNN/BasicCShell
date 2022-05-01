@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
             printf("-");
         }
     }
-    printf("\n(");
+    printf("(");
     for (int i = 1; i < argc; i++) 
     {
         if (argv[i] == NULL)
