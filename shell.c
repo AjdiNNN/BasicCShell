@@ -11,25 +11,7 @@
 
 #define MAXCOM 1000 // max number of letters to be supported
 #define MAXLIST 100 // max number of commands to be supported
-  
-// Clearing the shell using escape sequences
-#define clear() printf("\033[H\033[J")
-  
-// Greeting shell during startup
-void init_shell()
-{
-    clear();
-    char hostbuffer[256];
-    char *IPbuffer;
-    struct hostent *host_entry;
-    int hostname;
-    hostname = gethostname(hostbuffer, sizeof(hostbuffer));
-    host_entry = gethostbyname(hostbuffer);
-    char* username = getenv("USER");
-    printf("%s@%s", hostbuffer, username);
-    sleep(1);
-    clear();
-}
+
   
 // Function to take input
 int takeInput(char* str)
@@ -45,149 +27,11 @@ int takeInput(char* str)
     }
 }
 
-// Help command builtin
-void openHelp()
-{
-    puts("List of Commands built-in supported:"
-        "\n$exit"
-        "\n$rm"
-        "\n$cat"
-        "\n$clear"
-        );
-    return;
-}
-  // Function to execute builtin commands
-int ownCmdHandler(char** parsed)
-{
-    int NoOfOwnCmds = 6, i, switchOwnArg = 0;
-    char* ListOfOwnCmds[NoOfOwnCmds];
-
-    ListOfOwnCmds[0] = "exit";
-    ListOfOwnCmds[1] = "help";
-    ListOfOwnCmds[2] = "rm";
-    ListOfOwnCmds[3] = "cat";
-    ListOfOwnCmds[4] = "clear";
-    ListOfOwnCmds[5] = "cowsay";
-    
-    for (i = 0; i < NoOfOwnCmds; i++) {
-        if (strcmp(parsed[0], ListOfOwnCmds[i]) == 0) {
-            switchOwnArg = i + 1;
-            break;
-        }
-    }
-    switch (switchOwnArg) {
-    case 1:
-        printf("\nGoodbye\n");
-        exit(0);
-        return 1;
-    case 2:
-        openHelp();
-        return 1;
-    case 3:
-        if(parsed[1]=="") return printf("rm -filename\n");
-        int ret;
-        ret = remove(parsed[1]);
-        if(ret == 0) {
-            printf("%s is deleted successfully\n", parsed[1]);
-        } else {
-            printf("Error: unable to delete the file\n");
-        }
-        return 1;
-    case 4: ;
-        int i=1;
-        for (i = 1; i < MAXLIST; i++) 
-        {
-            if (parsed[i] == NULL)
-                break;
-            if (strlen(parsed[i]) == 0)
-                break;
-            if(parsed[i][0]!='>')
-            {
-                FILE *fp;
-                char c;
-                fp = fopen(parsed[i], "r");
-                if (fp == NULL)
-                {
-                    printf("Cannot open file \n");
-                    return 1;
-                }
-            
-                // Read contents from file
-                c = fgetc(fp);
-                while (c != EOF)
-                {
-                    printf ("%c", c);
-                    c = fgetc(fp);
-                }
-            
-                fclose(fp);
-                printf("\n");
-            }
-            else
-            {
-                FILE *fp;
-                char* filename = parsed[i] + 1;
-                fp = fopen (filename, "w");
-            }
-        }
-        return 1;
-    case 5:
-        clear();
-        return 1;
-    case 6: 
-        printf(" ");
-        for (int i = 1; i < MAXLIST; i++) 
-        {
-            if (parsed[i] == NULL)
-                break;
-            if (strlen(parsed[i]) == 0)
-                break;
-            for(int j=0; j < strlen(parsed[i])+1; j++)
-            {
-                printf("-");
-            }
-        }
-        printf("\n(");
-        for (int i = 1; i < MAXLIST; i++) 
-        {
-            if (parsed[i] == NULL)
-                break;
-            if (strlen(parsed[i]) == 0)
-                break;
-            printf("%s ",parsed[i]);
-        }
-        printf(")\n");
-        printf(" ");
-        for (int i = 1; i < MAXLIST; i++) 
-        {
-            if (parsed[i] == NULL)
-                break;
-            if (strlen(parsed[i]) == 0)
-                break;
-            for(int j=0; j < strlen(parsed[i])+1; j++)
-            {
-                printf("-");
-            }
-        }
-        printf("\n");
-        printf("     \\  ^__^\n");
-        printf("      \\ (oo)\\_____\n");
-        printf("        (__)\\     )\\/\\\n");
-        printf("           ||----w |\n");
-        printf("           ||     ||\n");
-        return 1;
-    default:
-        break;
-    }
-
-    return 0;
-}
-  
 // Function where the system command is executed
 void execArgs(char** parsed)
 {
-    if(ownCmdHandler(parsed))
-        return;
+    /*if(ownCmdHandler(parsed))
+        return;*/
     // Forking a child
     pid_t pid = fork(); 
   
@@ -315,7 +159,6 @@ int main()
     char inputString[MAXCOM], *parsedArgs[MAXLIST];
     char* parsedArgsPiped[MAXLIST];
     int execFlag = 0;
-    init_shell();
     char hostbuffer[256];
     char *IPbuffer;
     struct hostent *host_entry;
