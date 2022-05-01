@@ -30,8 +30,6 @@ int takeInput(char* str)
 // Function where the system command is executed
 void execArgs(char** parsed)
 {
-    /*if(ownCmdHandler(parsed))
-        return;*/
     // Forking a child
     pid_t pid = fork(); 
   
