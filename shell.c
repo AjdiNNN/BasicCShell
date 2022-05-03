@@ -70,8 +70,9 @@ void execArgsPiped(char** parsed, char** parsedpipe)
         dup2(fd[WRITE_END], STDOUT_FILENO);
         close(fd[READ_END]);
         close(fd[WRITE_END]);
-        execv(parsed[0], parsed);
-        fprintf(stderr, "Failed to execute '%s'\n", parsed[0]);
+        if (execv(parsed[0], parsed) < 0) {
+            printf("\nCould not execute command..");
+        }
         exit(1);
     }
     else
@@ -83,8 +84,9 @@ void execArgsPiped(char** parsed, char** parsedpipe)
             dup2(fd[READ_END], STDIN_FILENO);
             close(fd[WRITE_END]);
             close(fd[READ_END]);
-            execv(parsedpipe[0], parsedpipe);
-            fprintf(stderr, "Failed to execute '%s'\n", parsedpipe[0]);
+            if (execv(parsedpipe[0], parsedpipe) < 0) {
+                printf("\nCould not execute command..");
+            }
             exit(1);
         }
         else
