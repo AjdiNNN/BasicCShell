@@ -8,6 +8,7 @@
 #include<readline/readline.h>
 #include<readline/history.h>
 #include <netdb.h>
+#include <errno.h>
 
 #define MAXCOM 1000 // max number of letters to be supported
 #define MAXLIST 100 // max number of commands to be supported
@@ -53,71 +54,48 @@ void execArgs(char** parsed)
         return;
     }
 }
-  
-  // Function where the piped system commands is executed
+#define WRITE_END 1 
+#define READ_END 0
+// Function where the piped system commands is executed
 void execArgsPiped(char** parsed, char** parsedpipe)
 {
-    // 0 is read end, 1 is write end
-    int pipefd[2]; 
-    pid_t p1, p2;
-  
-    if (pipe(pipefd) < 0) {
-        red();
-        printf("\nPipe could not be initialized");
-        resetColor();
-        return;
+    pid_t pid;
+    int fd[2];
+
+    pipe(fd);
+    pid = fork();
+
+    if(pid==0)
+    {
+        dup2(fd[WRITE_END], STDOUT_FILENO);
+        close(fd[READ_END]);
+        close(fd[WRITE_END]);
+        execv(parsed[0], parsed);
+        fprintf(stderr, "Failed to execute '%s'\n", parsed[0]);
+        exit(1);
     }
-    p1 = fork();
-    if (p1 < 0) {
-        red();
-        printf("\nCould not fork");
-        return;
-    }
-  
-    if (p1 == 0) {
-        // Child 1 executing..
-        // It only needs to write at the write end
-        close(pipefd[0]);
-        dup2(pipefd[1], STDOUT_FILENO);
-        close(pipefd[1]);
-  
-        if (execvp(parsed[0], parsed) < 0) {
-            red();
-            printf("\nCould not execute command 1..");
-            resetColor();
-            exit(0);
+    else
+    { 
+        pid=fork();
+
+        if(pid==0)
+        {
+            dup2(fd[READ_END], STDIN_FILENO);
+            close(fd[WRITE_END]);
+            close(fd[READ_END]);
+            execv(parsedpipe[0], parsedpipe);
+            fprintf(stderr, "Failed to execute '%s'\n", parsedpipe[0]);
+            exit(1);
         }
-    } else {
-        // Parent executing
-        p2 = fork();
-  
-        if (p2 < 0) {
-            red();
-            printf("\nCould not fork");
-            resetColor();
-            return;
-        }
-  
-        // Child 2 executing..
-        // It only needs to read at the read end
-        if (p2 == 0) {
-            close(pipefd[1]);
-            dup2(pipefd[0], STDIN_FILENO);
-            close(pipefd[0]);
-            if (execvp(parsedpipe[0], parsedpipe) < 0) {
-                red();
-                printf("\nCould not execute command 2..");
-                resetColor();
-                exit(0);
-            }
-        } else {
-            // parent executing, waiting for two children
-            wait(NULL);
-            wait(NULL);
+        else
+        {
+            int status;
+            close(fd[READ_END]);
+            close(fd[WRITE_END]);
+            waitpid(pid, &status, 0);
         }
     }
 }
-  
 
 // function for finding pipe
 int parsePipe(char* str, char** strpiped)
