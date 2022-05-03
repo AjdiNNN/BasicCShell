@@ -56,6 +56,7 @@ void execArgs(char** parsed)
 }
 #define WRITE_END 1 
 #define READ_END 0
+
 // Function where the piped system commands is executed
 void execArgsPiped(char** parsed, char** parsedpipe)
 {

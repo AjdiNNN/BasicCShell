@@ -120,7 +120,6 @@ Usage:\n\
 \n\
 Flags:\n\
     -h or --help    - Displays this help text\n\
-    -l or --list    - List all cowfiles\n\
     -e or --eyes    - Specify character used for the eyes. Must be ONE character!\n\
     -t or --thought - Thought bubble\n");
 }
